@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: stg_fremtpl2freq
+    columns:
+      - name: policy_id
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_fremtpl2sev
+    columns:
+      - name: policy_id
+        tests:
+          - not_null
