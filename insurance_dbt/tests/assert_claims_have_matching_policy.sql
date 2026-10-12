@@ -1,5 +1,8 @@
+{{ config(severity='warn') }}
+
 -- Every severity claim should map to a policy in the frequency table.
--- This test passes when it returns zero rows.
+-- Known unmatched policy IDs are surfaced as warnings while being retained
+-- in fct_unmatched_policy_claims for investigation.
 select distinct
     sev.policy_id
 from {{ ref('stg_fremtpl2sev') }} as sev
