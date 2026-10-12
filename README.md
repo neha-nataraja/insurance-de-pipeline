@@ -114,7 +114,7 @@ I have 4.5 years of enterprise insurance data experience from Deloitte, working 
 git clone https://github.com/neha-nataraja/insurance-de-pipeline.git
 cd insurance-de-pipeline
 python -m venv .venv
-.venv\\Scripts\\activate
+.venv\Scripts\activate
 pip install -r requirements.txt
 python src/ingestion/download_data.py
 # Create a .env file with your own PostgreSQL credentials.
