@@ -50,8 +50,10 @@ Public Insurance Data (OpenML / CASdatasets)
    - **Intermediate** — aggregates claim-level data to policy level (`int_policy_claims_agg`)
    - **Marts** — joins policy and claims data into a single analytics-ready fact table (`fct_policy_claims`), then segments it by rating factor into `mart_risk_segment_loss_cost`
 4. **Testing**:
-   - 5 dbt schema tests (`not_null`, `unique`) on primary keys across staging and mart models, all passing
+   - 5 dbt schema tests (`not_null`, `unique`) on primary keys across staging and mart models
    - 1 custom business-logic test (`assert_bonus_malus_monotonic`, warn severity) checking whether loss cost rises monotonically with bonus-malus risk band, as the rating factor assumes
+   - 1 referential-integrity test (`assert_claims_have_matching_policy`) checking that every severity claim maps to a policy
+   - 1 reconciliation test (`assert_claim_amount_reconciles`) comparing source severity claim counts and total claim amounts with the fact table
 5. **Analytics** — Power BI dashboard connected to `fct_policy_claims` and `mart_risk_segment_loss_cost`
 
 ## Business Questions Answered
@@ -103,7 +105,7 @@ Python · pandas · SQLAlchemy · PostgreSQL · dbt · Power BI · Git/GitHub
 
 ## Data Limitations
 
-This project uses publicly available historical French motor third-party liability insurance data — it does not contain any Deloitte, client, or policyholder data, and is not representative of any real insurer's production scale, data volume, or latency requirements. The dbt layer uses `not_null`/`unique` schema tests plus one business-logic test appropriate to the dataset's scope; a production pipeline at enterprise scale would require additional tests (referential integrity across source systems, freshness checks, anomaly detection) and orchestration (e.g. Airflow) not yet implemented here.
+This project uses publicly available historical French motor third-party liability insurance data — it does not contain any Deloitte, client, or policyholder data, and is not representative of any real insurer's production scale, data volume, or latency requirements. The dbt layer uses `not_null`/`unique` schema tests, a business-logic test, a referential-integrity test, and a claim-count/amount reconciliation test. A production pipeline at enterprise scale would require additional checks (freshness, anomaly detection) and orchestration (e.g. Airflow) not yet implemented here.
 
 ## Why This Project
 
