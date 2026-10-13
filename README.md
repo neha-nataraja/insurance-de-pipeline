@@ -63,7 +63,7 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
 
 - **How should potential anomalies be interpreted?**
 
-  The warning-severity test identifies adjacent credible segment pairs where observed loss cost declines as the bonus-malus band worsens, comparing like-for-like regions and vehicle-power bands. These are investigation leads, not automatic pricing recommendations. Findings should be reviewed alongside claim counts, exposure, credibility and other risk factors before drawing conclusions.
+  The latest local run of `assert_bonus_malus_monotonic` flagged 11 adjacent credible segment pairs where observed loss cost declines as the bonus-malus band worsens, comparing the same region and vehicle-power band. Examples include region R22, mid-power vehicles (loss cost 560.16 in band 51–70 versus 245.72 in band 71–100), and region R82, low-power vehicles (811.87 in band 71–100 versus 520.92 in band 101–130). These are investigation leads, not proof of incorrect pricing. Findings should be reviewed alongside claim counts, exposure, credibility and other risk factors before drawing conclusions. The count should be refreshed whenever the source data or test logic changes.
 
 - **How much of the portfolio sits in segments too small to price reliably?**
 
@@ -72,7 +72,7 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
 ## Dashboards
 
 - **`dashboards/insurance_dashboard.pbix`** — the original descriptive view (claim cost and frequency by region).
-- **`dashboards/risk_segmentation_dashboard.pbix`** — a heatmapped loss-cost matrix by bonus-malus band × region, with visuals for risk-segment and credibility analysis. Revalidate displayed anomaly counts and example comparisons against the latest dbt test results before using them as findings.
+- **`dashboards/risk_segmentation_dashboard.pbix`** — a heatmapped loss-cost matrix by bonus-malus band × region, with visuals for risk-segment and credibility analysis. Refresh the report and verify its anomaly-count KPI against the current dbt test result (11 flagged comparisons in the latest local run).
 
 ![Risk Segmentation Dashboard](dashboards/risk_segmentation_screenshot.png)
 
