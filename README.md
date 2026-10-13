@@ -55,7 +55,7 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
    - 1 custom business-logic test (`assert_bonus_malus_monotonic`, warning severity) that checks `mart_bonus_malus_anomalies`: adjacent bonus-malus bands within the same region and vehicle-power band, restricted to segments with at least 30 claims. The latest local run flagged 11 comparisons. Results are candidates for investigation, not definitive pricing conclusions.
    - 1 referential-integrity test (`assert_claims_have_matching_policy`, warning severity) checking whether each severity claim maps to a policy. It currently flags six distinct policy IDs missing from the frequency dataset.
    - 1 reconciliation test (`assert_claim_amount_reconciles`) comparing the source claim count and total claim amount with the combined policy fact and exception model.
-5. **Analytics** — Power BI dashboards connected to `fct_policy_claims` and `mart_risk_segment_loss_cost`.
+5. **Analytics** — Power BI dashboards connected to `fct_policy_claims`, `mart_risk_segment_loss_cost`, and `mart_bonus_malus_anomalies`.
 
 ## Business Questions Answered
 
@@ -65,7 +65,7 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
 
 - **How should potential anomalies be interpreted?**
 
-  The latest local run of `assert_bonus_malus_monotonic` flagged 11 adjacent credible segment pairs. These are persisted in `mart_bonus_malus_anomalies`, which includes the region, vehicle-power band, compared bonus-malus bands, loss-cost values, and decline percentages. Examples include region R22, mid-power vehicles (560.16 in band 51–70 versus 245.72 in band 71–100), and region R82, low-power vehicles (811.87 in band 71–100 versus 520.92 in band 101–130). These are investigation leads, not proof of incorrect pricing. Findings should be reviewed alongside claim counts, exposure, credibility and other risk factors before drawing conclusions. The count should be refreshed whenever source data or test logic changes.
+  The latest local run of `assert_bonus_malus_monotonic` flagged **11 adjacent credible segment comparisons**. These are persisted in `mart_bonus_malus_anomalies`, which includes the region, vehicle-power band, compared bonus-malus bands, loss-cost values, absolute decline, and percentage decline. Examples include region R22, mid-power vehicles (560.16 in band 51–70 versus 245.72 in band 71–100), and region R82, low-power vehicles (811.87 in band 71–100 versus 520.92 in band 101–130). These are investigation leads, not proof of incorrect pricing. Findings should be reviewed alongside claim counts, exposure, credibility and other risk factors before drawing conclusions. The count should be refreshed whenever source data or test logic changes.
 
 - **How much of the portfolio sits in segments too small to price reliably?**
 
@@ -74,7 +74,7 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
 ## Dashboards
 
 - **`dashboards/insurance_dashboard.pbix`** — the original descriptive view (claim cost and frequency by region).
-- **`dashboards/risk_segmentation_dashboard.pbix`** — a heatmapped loss-cost matrix by bonus-malus band × region, with visuals for risk-segment and credibility analysis. To report the corrected anomaly count consistently, connect the report to `mart_bonus_malus_anomalies` and use its row count (11 in the latest local run); a dbt test warning does not automatically update a Power BI KPI.
+- **`dashboards/risk_segmentation_dashboard.pbix`** — the risk analysis report. Its current layout includes a heatmapped loss-cost matrix by bonus-malus band × region, KPI cards showing **11 risk comparisons flagged** and **124 credible segments analysed**, and a detailed table listing the 11 like-for-like comparisons by region, vehicle-power band, adjacent bonus-malus bands, loss costs, and percentage decline. The anomaly KPI uses the row count from `mart_bonus_malus_anomalies`; refresh the report after data or model changes.
 
 ![Risk Segmentation Dashboard](dashboards/risk_segmentation_screenshot.png)
 
@@ -84,6 +84,17 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
 ![Dashboard Screenshot](dashboards/dashboard_screenshot.png)
 
 </details>
+
+## Latest Local Validation
+
+After the recent model and test updates, the local run completed with:
+
+- **7 dbt models built successfully**
+- **8 data tests completed: 6 passed, 2 warnings, 0 errors**
+- **11** like-for-like bonus-malus comparisons surfaced in `mart_bonus_malus_anomalies`
+- **6** unmatched policy IDs retained in `fct_unmatched_policy_claims`, representing **195 claims** and **788,714.18** in claim amounts
+
+The two warnings are intentional monitoring signals: potential loss-cost reversals across adjacent credible risk bands, and source claims whose policy IDs are not present in the frequency dataset. They are not treated as resolved data-quality or actuarial issues.
 
 ## Data Quality Finding: Unmatched Claims
 
