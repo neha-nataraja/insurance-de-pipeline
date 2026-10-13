@@ -76,7 +76,7 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
 - **`dashboards/insurance_dashboard.pbix`** — the original descriptive view (claim cost and frequency by region).
 - **`dashboards/risk_segmentation_dashboard.pbix`** — the risk analysis report. Its current layout includes a heatmapped loss-cost matrix by bonus-malus band × region, KPI cards showing **11 risk comparisons flagged** and **124 credible segments analysed**, and a detailed table listing the 11 like-for-like comparisons by region, vehicle-power band, adjacent bonus-malus bands, loss costs, and percentage decline. The anomaly KPI uses the row count from `mart_bonus_malus_anomalies`; refresh the report after data or model changes.
 
-![Risk Segmentation Dashboard](dashboards/risk_segmentation_screenshot.png)
+![Risk Segmentation Dashboard](dashboards/risk_segmentation.png)
 
 <details>
 <summary>Original dashboard (claim cost/frequency by region)</summary>
