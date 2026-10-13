@@ -61,9 +61,9 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
 
   Built a mart (`mart_risk_segment_loss_cost`) combining claim frequency and severity into a loss-cost-per-exposure metric across bonus-malus × vehicle power × region. A warning-severity dbt test compares adjacent bonus-malus bands within the same region and vehicle-power band, using segments with at least 30 claims.
 
-- **Does it hold?**
+- **How should potential anomalies be interpreted?**
 
-  Bonus-malus monotonicity is a hypothesis to evaluate, not a guarantee that claim costs must rise in every sample. The test surfaces adjacent credible segment pairs where loss cost declines as the bonus-malus band worsens, comparing like-for-like regions and vehicle-power bands. Review findings alongside claim counts, exposure, credibility and other risk factors before drawing pricing conclusions. Run the updated test before publishing an anomaly count.
+  The warning-severity test identifies adjacent credible segment pairs where observed loss cost declines as the bonus-malus band worsens, comparing like-for-like regions and vehicle-power bands. These are investigation leads, not automatic pricing recommendations. Findings should be reviewed alongside claim counts, exposure, credibility and other risk factors before drawing conclusions.
 
 - **How much of the portfolio sits in segments too small to price reliably?**
 
@@ -72,7 +72,7 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
 ## Dashboards
 
 - **`dashboards/insurance_dashboard.pbix`** — the original descriptive view (claim cost and frequency by region).
-- **`dashboards/risk_segmentation_dashboard.pbix`** — a heatmapped loss-cost matrix by bonus-malus band × region, with visuals for risk-segment and credibility analysis. Refresh and verify any anomaly-count KPI or comparison examples after rerunning the updated dbt test.
+- **`dashboards/risk_segmentation_dashboard.pbix`** — a heatmapped loss-cost matrix by bonus-malus band × region, with visuals for risk-segment and credibility analysis. Revalidate displayed anomaly counts and example comparisons against the latest dbt test results before using them as findings.
 
 ![Risk Segmentation Dashboard](dashboards/risk_segmentation_screenshot.png)
 
