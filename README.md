@@ -50,7 +50,7 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
    - **Marts** — creates the policy-level fact table (`fct_policy_claims`), the unmatched-claims exception model (`fct_unmatched_policy_claims`), and the risk-segment mart (`mart_risk_segment_loss_cost`).
 4. **Testing**:
    - 5 dbt schema tests (`not_null`, `unique`) on key columns.
-   - 1 custom business-logic test (`assert_bonus_malus_monotonic`, warning severity) checking whether loss cost rises monotonically with bonus-malus risk band. The current data flags 30 segment-pairs for investigation.
+   - 1 custom business-logic test (`assert_bonus_malus_monotonic`, warning severity) comparing adjacent bonus-malus bands within the same region and vehicle-power band, restricted to segments with at least 30 claims. Results are candidates for investigation, not definitive pricing conclusions.
    - 1 referential-integrity test (`assert_claims_have_matching_policy`, warning severity) checking whether each severity claim maps to a policy. It currently flags six distinct policy IDs missing from the frequency dataset.
    - 1 reconciliation test (`assert_claim_amount_reconciles`) comparing the source claim count and total claim amount with the combined policy fact and exception model.
 5. **Analytics** — Power BI dashboards connected to `fct_policy_claims` and `mart_risk_segment_loss_cost`.
@@ -59,11 +59,11 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
 
 - **Which rating-factor segments show loss cost inconsistent with their risk band?**
 
-  Built a mart (`mart_risk_segment_loss_cost`) combining claim frequency and severity into a single loss-cost-per-exposure metric across bonus-malus × vehicle power × region. A custom dbt test checks whether loss cost rises monotonically with bonus-malus within each region, as the rating factor assumes.
+  Built a mart (`mart_risk_segment_loss_cost`) combining claim frequency and severity into a loss-cost-per-exposure metric across bonus-malus × vehicle power × region. A warning-severity dbt test compares adjacent bonus-malus bands within the same region and vehicle-power band, using segments with at least 30 claims.
 
 - **Does it hold?**
 
-  No — 30 segment-pairs break the expected pattern. The clearest case: region R22's mid-risk band (51–70) carries a higher loss cost (£560/exposure-unit) than the nominally worse band (71–100, £209–246). Regions R82 and R24 show similar ~35% breaks at higher bonus-malus tiers. These are candidates for re-pricing review, not definitive actuarial conclusions.
+  Bonus-malus monotonicity is a hypothesis to evaluate, not a guarantee that claim costs must rise in every sample. The test surfaces adjacent credible segment pairs where loss cost declines as the bonus-malus band worsens, comparing like-for-like regions and vehicle-power bands. Review findings alongside claim counts, exposure, credibility and other risk factors before drawing pricing conclusions. Run the updated test before publishing an anomaly count.
 
 - **How much of the portfolio sits in segments too small to price reliably?**
 
@@ -72,7 +72,7 @@ The policy fact contains claims whose policy IDs match the frequency dataset. Cl
 ## Dashboards
 
 - **`dashboards/insurance_dashboard.pbix`** — the original descriptive view (claim cost and frequency by region).
-- **`dashboards/risk_segmentation_dashboard.pbix`** — a heatmapped loss-cost matrix by bonus-malus band × region, KPI tiles for anomaly and credible-segment counts, and a comparison chart for three regions where the rating factor breaks down.
+- **`dashboards/risk_segmentation_dashboard.pbix`** — a heatmapped loss-cost matrix by bonus-malus band × region, with visuals for risk-segment and credibility analysis. Refresh and verify any anomaly-count KPI or comparison examples after rerunning the updated dbt test.
 
 ![Risk Segmentation Dashboard](dashboards/risk_segmentation_screenshot.png)
 
