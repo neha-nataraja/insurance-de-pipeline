@@ -1,12 +1,12 @@
 -- tests/assert_bonus_malus_monotonic.sql
 --
--- Business-logic test (not a schema test): bonus-malus is supposed to
--- track risk monotonically -- a worse bonus-malus band should never show a
--- LOWER loss cost than the next-better band in the same region. If it
--- does, that segment is a candidate for re-pricing.
+-- Business-logic test (not a schema test): within the same region and
+-- vehicle-power band, a worse bonus-malus band should not have a LOWER
+-- loss cost than the adjacent better band. Violations are candidates for
+-- investigation, not definitive pricing conclusions.
 --
--- severity: warn -- the point is to surface anomalies for review, not to
--- hard-fail the build on a legitimate finding.
+-- Compare only segments with at least 30 claims (credible segments).
+-- Warning severity surfaces anomalies without failing the entire build.
 
 {{ config(severity = 'warn') }}
 
@@ -14,12 +14,13 @@ with ranked as (
 
     select
         region,
+        vehicle_power_band,
         bonus_malus_band,
         loss_cost_per_exposure,
         credibility_flag,
 
-        -- bonus_malus_band is a text label ('50 (best)', '131+ (worst)', ...)
-        -- so it must be ranked explicitly in risk order, not alphabetically
+        -- bonus_malus_band is a text label, so rank it explicitly by risk
+        -- order rather than comparing band labels alphabetically.
         case bonus_malus_band
             when '50 (best)'    then 1
             when '51-70'        then 2
@@ -35,6 +36,7 @@ with ranked as (
 
 select
     r1.region,
+    r1.vehicle_power_band,
     r1.bonus_malus_band       as better_band,
     r1.loss_cost_per_exposure as better_band_loss_cost,
     r2.bonus_malus_band       as worse_band,
@@ -42,5 +44,6 @@ select
 from ranked r1
 join ranked r2
     on r1.region = r2.region
+    and r1.vehicle_power_band = r2.vehicle_power_band
     and r2.band_rank = r1.band_rank + 1
     and r2.loss_cost_per_exposure < r1.loss_cost_per_exposure
